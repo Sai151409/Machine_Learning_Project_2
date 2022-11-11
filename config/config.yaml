@@ -1,0 +1,10 @@
+training_pipeline_config:
+  pipeline_name : credit_card
+  artifact_dir : artifact
+
+data_ingestion_config :
+  download_url : https://archive.ics.uci.edu/ml/machine-learning-databases/00350/default%20of%20credit%20card%20clients.xls
+  raw_data_dir : raw_data
+  ingested_dir : ingested_data
+  ingested_train_dir : train
+  ingested_test_dir : test

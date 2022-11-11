@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 import pandas as pd
 
-LOG_DIR = 'credir_card_logs'
+LOG_DIR = 'credit_card_logs'
 
 os.makedirs(LOG_DIR, exist_ok=True)
 
@@ -14,7 +14,7 @@ file_path = os.path.join(LOG_DIR, LOG_FILE_NAME)
 logging.basicConfig(filename=file_path,
                     filemode='w',
                     level=logging.INFO,
-                    format='%(asctime)s^;%(levelname)s^;%(lineno)s^;%(filename)s^;%(funcName)s^;%(message)s')
+                    format='[%(asctime)s] %(name)s - %(levelname)s - %(message)s')
 
 
 def get_log_dataframe(filepath:str):
