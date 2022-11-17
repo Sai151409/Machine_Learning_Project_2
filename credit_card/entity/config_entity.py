@@ -6,7 +6,8 @@ DataIngestionConfig = namedtuple('DataIngestionConfig', [
 ])
 
 DataValidationConfig = namedtuple('DataValidation', [
-    'schema_file_path', 'report_file_path', 'report_page_file_path'
+    'validated_train_dir', 'validated_test_dir','schema_file_path', 
+    'report_file_path', 'report_page_file_path'
 ])
 
 DataTransformationConfig = namedtuple('DataTransformationConfig', [

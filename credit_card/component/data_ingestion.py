@@ -49,8 +49,7 @@ class DataIngestion:
             
             credit_card_dataset_file_path = raw_data_file_path
             
-            credit_card_dataframe = pd.read_excel(credit_card_dataset_file_path,
-                                                  index_col=0, header = 1)
+            credit_card_dataframe = pd.read_excel(credit_card_dataset_file_path, header = 1)
             
             logging.info('Splitting the dataset into train and test')
             
@@ -68,19 +67,19 @@ class DataIngestion:
             test_file_path = os.path.join(self.data_ingestion_config.ingested_test_dir, file_name)
             
             if strat_train_set is not None:
-                os.makedirs(train_file_path, exist_ok=True)
+                os.makedirs(self.data_ingestion_config.ingested_train_dir, exist_ok=True)
                 logging.info(f"Exporting the data set into :[{train_file_path}]")
                 strat_train_set.to_csv(train_file_path, index = False)
                 
             if strat_test_set is not None:
-                os.makedirs(test_file_path, exist_ok=True)
+                os.makedirs(self.data_ingestion_config.ingested_test_dir, exist_ok=True)
                 logging.info(f"Exporting the data set into :[{test_file_path}]")
                 strat_test_set.to_csv(test_file_path, index = False)
             
             data_ingestion_artifact = DataIngestionArtifact(
                 train_file_path=train_file_path,
                 test_file_path=test_file_path,
-                is_ingetsed=True,
+                is_ingested=True,
                 message="Data Ingestion Completed Successfully"
             )
             

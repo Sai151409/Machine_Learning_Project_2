@@ -1,15 +1,16 @@
 from credit_card.logger import logging
 from credit_card.exception import CreditCardException
 from credit_card.config.configuration import Configuration
+from credit_card.component.data_ingestion import DataIngestion
 import sys
+from credit_card.pipeline.pipeline import Pipeline
 
 
 
 def main():
     try:
-        config = Configuration()
-        data_ingestion_artifact = config.get_data_ingestion_config()
-        print(data_ingestion_artifact)
+        pipeline = Pipeline()
+        pipeline.run_pipeline()
     except Exception as e:
         logging.error(f'{e}')
         print(e)
