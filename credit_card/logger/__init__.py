@@ -14,7 +14,7 @@ file_path = os.path.join(LOG_DIR, LOG_FILE_NAME)
 logging.basicConfig(filename=file_path,
                     filemode='w',
                     level=logging.INFO,
-                    format='[%(asctime)s] %(name)s - %(levelname)s - %(message)s')
+                    format='[%(asctime)s]^;%(levelname)s^;%(lineno)d^;%(filename)s^;%(funcName)s()^;%(message)s')
 
 
 def get_log_dataframe(filepath:str):

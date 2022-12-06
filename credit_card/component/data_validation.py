@@ -155,11 +155,13 @@ class DataValidation:
         except Exception as e:
             raise CreditCardException(e, sys) from e
         
-    def save_data_drift_report(self):
+    def save_data_drift_report(self, train_file_path, test_file_path):
         try:
             profile = Profile(sections=[DataDriftProfileSection()])
             
-            train_df_file_path, test_df_file_path = self.validated_train_and_test_file_path()
+            train_df_file_path = train_file_path
+            
+            test_df_file_path = test_file_path
             
             train_df = pd.read_csv(train_df_file_path)
             
@@ -182,11 +184,13 @@ class DataValidation:
         except Exception as e:
             raise CreditCardException(e, sys) from e
     
-    def save_data_drift_report_page(self):
+    def save_data_drift_report_page(self, train_file_path, test_file_path):
         try:
             dashboard = Dashboard(tabs=[DataDriftTab()])
             
-            train_df_file_path, test_df_file_path = self.validated_train_and_test_file_path()
+            train_df_file_path = train_file_path
+            
+            test_df_file_path = test_file_path
             
             train_df = pd.read_csv(train_df_file_path)
             
@@ -204,12 +208,11 @@ class DataValidation:
         except Exception as e:
             raise CreditCardException(e, sys) from e
         
-    def is_data_drift_found(self) -> bool:
+    def is_data_drift_found(self, train_file_path, report) -> bool:
         try:
             data_drift = set()
-            report = self.save_data_drift_report()
-            self.save_data_drift_report_page()
-            train_file_path, test_file_path = self.validated_train_and_test_file_path()
+            report = report
+            train_file_path = train_file_path
             train_df = pd.read_csv(train_file_path)
             for i in train_df.columns:
                 data_drift.add(report['data_drift']['data']['metrics'][i]['drift_detected'])
@@ -224,12 +227,70 @@ class DataValidation:
         except Exception as e:
             raise CreditCardException(e, sys) from e
         
+    @staticmethod
+    def outliers(df, i):
+        try:
+            q1, q2, q3 = np.quantile(df[i], [0.25, 0.5, 0.75])
+            iqr = q3 - q1
+            upper_whisker = q3 + (3 * iqr)
+            lower_whisker = q1 - (3 * iqr)
+            percentage = (len(df[(df[i] > upper_whisker) | (df[i] < lower_whisker)])/len(df)) * 100
+            return f'Outliers percentage of {i} : {percentage}'
+        except Exception as e:
+            raise Exception(e, sys) from e
+    
+        
+    def exploratory_data_analysis(self, train_file_path) :
+        try:
+            train_file_path = train_file_path
+            train_df = pd.read_csv(train_file_path)
+            schema = read_yaml(self.data_validation_config.schema_file_path)
+            target_variable = schema['target_column'][0]
+            df = train_df.drop(target_variable, axis = 1)
+            range = df.shape
+            columns = df.columns
+            null_value_count = sum(df.isnull().sum())
+            numerical_columns = []
+            categorical_columns = []
+            outliers = []
+            threshold = 20
+            for i in columns:
+                l = len(df[i].unique())
+                if l > threshold:
+                    numerical_columns.append(i)
+                else:
+                    categorical_columns.append(i)
+            
+            unique_values_of_target_variable = train_df[target_variable].unique()
+            percentage = []
+            for i in unique_values_of_target_variable:
+                percentage.append((len(train_df[train_df[target_variable] == i])/len(train_df)) * 100)
+            for i in numerical_columns:
+                outliers.append(DataValidation.outliers(df=df, i=i))
+    
+            logging.info(f'''Imbalanced dataset : {percentage}'
+            Range : {range}\n
+            columns : {columns}\n
+            Null_Values : {null_value_count}\n
+            numerical_columns : {numerical_columns}\n
+            categorical_columns : {categorical_columns}
+            outliers : {outliers}''')
+        except Exception as e:
+            raise CreditCardException(e, sys) from e
+            
+        
     def initiate_data_validation(self) -> DataValidationArtifact:
         try:
             self.is_train_test_exists()
-            self.validate_data_schema()
             validated_train_file_path, validated_test_file_path = self.validated_train_and_test_file_path()
-            self.is_data_drift_found()
+            report = self.save_data_drift_report(train_file_path=validated_train_file_path,
+                                        test_file_path=validated_test_file_path)
+            self.save_data_drift_report_page(train_file_path=validated_train_file_path,
+                                             test_file_path=validated_test_file_path)
+            
+            self.is_data_drift_found(train_file_path=validated_test_file_path,
+                                     report=report)
+            self.exploratory_data_analysis(train_file_path = validated_train_file_path)
             data_validation_artifact = DataValidationArtifact(
                 validated_train_file_path=validated_train_file_path,
                 validated_test_file_path=validated_test_file_path,
@@ -239,6 +300,7 @@ class DataValidation:
                 is_validated=True,
                 message='Data Validation Performed Successfully.'
             )
+            
             logging.info(f'Data Validation Artifact : {data_validation_artifact}')
             
             return data_validation_artifact
