@@ -7,4 +7,5 @@ PyYAML
 evidently
 matplotlib
 dill
+xlrd
 -e .
