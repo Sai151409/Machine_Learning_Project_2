@@ -71,7 +71,7 @@ def view_experiment_history():
     context = {
         "experiment": experiment_df.to_html(classes='table table-striped col-12')
     }
-    return render_template('experiment_history.html', context=context)
+    return render_template('experiment.html', context=context)
 
 @app.route('/train', methods=['GET', 'POST'])
 def train():
@@ -230,4 +230,4 @@ def render_log_dir(req_path):
 
 
 if __name__ == "__main__":
-    app.run(port=2705, debug=True)
+    app.run()
